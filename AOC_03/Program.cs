@@ -349,12 +349,31 @@ namespace AOC_03
 
             (int, int) testStart = ( 3, 1 );
             Position directions = new Position { X = 3, Y = 1 };
+            List<Position> positions = new List<Position>
+            {
+                new Position{ X = 1, Y = 1},
+                new Position{ X = 3, Y = 1},
+                new Position{ X = 5, Y = 1},
+                new Position{ X = 7, Y = 1},
+                new Position{ X = 1, Y = 2}
+            };
 
             Solver s = new Solver();
             testResult = s.Solve(testInput, directions);
             realResult = s.Solve(realInput, directions);
 
-            Console.WriteLine($"Testresult: {testResult} Realresult: {realResult}");
+            List<int> realResultPart2 = new List<int>();
+            foreach (var p in positions)
+            {
+                realResultPart2.Add(s.Solve(realInput, p));
+            }
+            int res = 1;
+            foreach(int i in realResultPart2)
+            {
+                res *= i;
+            }
+
+            Console.WriteLine($"Testresult: {testResult} Realresult: {realResult} Realresultpart2: {res}");
         }
     }
 
