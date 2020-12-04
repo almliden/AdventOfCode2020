@@ -1173,7 +1173,6 @@ iyr:2011 ecl:brn hgt:59in";
                 "cid"
             };
 
-
             List<string> validKeys = new List<string>
             {
                 "byr",
@@ -1188,13 +1187,43 @@ iyr:2011 ecl:brn hgt:59in";
 
 
 
-            testResult = s.Solve(testInput, validKeys);
+            string invalidInput = @"eyr:1972 cid:100
+hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+iyr:2019
+hcl:#602927 eyr:1967 hgt:170cm
+ecl:grn pid:012533040 byr:1946
+
+hcl:dab227 iyr:2012
+ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+hgt:59cm ecl:zzz
+eyr:2038 hcl:74454a iyr:2023
+pid:3556412378 byr:2007";
+            int invalidResult = 0;
+
+            string validInput = @"pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+hcl:#623a2f
+
+eyr:2029 ecl:blu cid:129 byr:1989
+iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+hcl:#888785
+hgt:164cm byr:2001 iyr:2015 cid:88
+pid:545766238 ecl:hzl
+eyr:2022
+
+iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
+            int validResult = 0;
+
+
+            //testResult = s.Solve(testInput, validKeys);
+            //invalidResult = s.Solve(invalidInput, validKeys);
+            //validResult = s.Solve(validInput, validKeys);
             realResult = s.Solve(realInput, validKeys);
 
-
-
-
             Console.WriteLine($"Test: {testResult} Real: {realResult} ");
+            Console.WriteLine($"Invalidresult: {invalidResult} Real: {validResult} ");
         }
     }
 
@@ -1231,15 +1260,93 @@ iyr:2011 ecl:brn hgt:59in";
         {
             int requirement = validkeys.Count();
             int valid = 0;
-            int requirementCount;
+            int requirementCount = 0;
             foreach(var passport in passports)
             {
+                if (passport.Count() < requirement)
+                {
+                    continue;
+                }
                 requirementCount = 0;
                 foreach (KeyValuePair<string, string> entry in passport)
                 {
                     if (validkeys.Contains(entry.Key))
                     {
-                        requirementCount++;
+                        switch (entry.Key)
+                        {
+                            case "byr":
+                                int value;
+                                //"1920 and at most 2002"
+                                if (int.TryParse(entry.Value, out value) && value >= 1920 && value <= 2002)
+                                {
+                                    requirementCount+=1;
+                                }
+                                break;
+                            case "iyr":
+                                int year;
+                                //(Issue Year) -four digits; at least 2010 and at most 2020.
+                                if (int.TryParse(entry.Value, out year) && year >= 2010 && year <= 2020)
+                                {
+                                    requirementCount+=1;
+                                }
+                                break;
+                            case "eyr":
+                                if (int.TryParse(entry.Value, out value) && value >= 2020 && value <= 2030)
+                                {
+                                    requirementCount+=1;
+                                }
+                                break;
+                            case "hgt":
+                                int height;
+                                bool cm = entry.Value.Contains("cm");
+                                if ((cm && entry.Value.Split("cm").Length == 2) || (!cm && entry.Value.Split("in").Length == 2))
+                                {
+                                    string stringValue = cm ? entry.Value.Split("cm")[0] : entry.Value.Split("in")[0];
+                                    //string stringValue = new Regex(@"\d{1-4}").Split(entry.Value).First();
+                                    if (cm && int.TryParse(stringValue, out height) && height >= 150 && height <= 193)
+                                    {
+                                        requirementCount += 1;
+                                    }
+                                    else if (!cm && int.TryParse(stringValue, out height) && height >= 59 && height <= 76)
+                                    {
+                                        requirementCount += 1;
+                                    }
+                                }
+                                break;
+                            case "hcl":
+                                if (new Regex(@"#[0-9a-fA-F]{6}").IsMatch(entry.Value))
+                                {
+                                    if (entry.Value.Length == 7)
+                                    {
+                                        requirementCount+=1;
+                                    }
+                                }
+                                break;
+                            case "ecl":
+                                List<string> ecls= new List<string>
+                                {
+                                    "amb", "blu", "brn", "gry", "grn", "hzl", "oth"
+                                };
+                                if (ecls.Contains(entry.Value))
+                                {
+                                    if (entry.Value.Length == 3)
+                                    {
+                                        requirementCount += 1;
+                                    }
+                                }
+                                break;
+                            case "pid":
+                                if (new Regex(@"[0-9]{9}").IsMatch(entry.Value))
+                                {
+                                    if (entry.Value.Length == 9)
+                                    {
+                                        requirementCount+=1;
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
                 if (requirementCount >= requirement)
@@ -1252,3 +1359,11 @@ iyr:2011 ecl:brn hgt:59in";
     }
 
 }
+
+
+//134: That 's not the right answer; your answer is too high. If you're stuck, make sure you're using the full input data; there are also some general tips on the about page, or you can ask for hints on the subreddit. Please wait one minute before trying again. (You guessed 134.) [Return to Day 4]
+//106: That 's not the right answer; your answer is too low. If you're stuck, make sure you're using the full input data; there are also some general tips on the about page, or you can ask for hints on the subreddit. Please wait one minute before trying again. (You guessed 106.) [Return to Day 4]
+//108: That 's not the right answer; your answer is too low. If you're stuck, make sure you're using the full input data; there are also some general tips on the about page, or you can ask for hints on the subreddit. Please wait one minute before trying again. (You guessed 106.) [Return to Day 4]
+
+
+
